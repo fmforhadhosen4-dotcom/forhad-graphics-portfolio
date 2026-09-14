@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FORHAD HOSEN | Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#060711;color:#fff;font-family:Arial,"Noto Sans Bengali",sans-serif}body:before{content:"";position:fixed;width:450px;height:450px;left:-180px;top:30px;background:#7b35ff44;filter:blur(105px);border-radius:50%;z-index:-1}.wrap{max-width:1000px;margin:auto;padding:20px}.box{background:#10101aed;border:1px solid #ffffff14;border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 18px 50px #0008}.login{max-width:420px;margin:90px auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.top h1{font-size:21px}.small{font-size:12px;color:#777}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}input,textarea{width:100%;padding:13px;margin:6px 0 12px;background:#080810;color:#fff;border:1px solid #ffffff17;border-radius:10px;outline:0}textarea{min-height:85px}.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 15px;border:1px solid #ffffff20;border-radius:10px;background:linear-gradient(135deg,#733cff,#287dff);color:#fff;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 6px 0 #30206d,0 10px 22px #6035ff33;margin:3px}.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #30206d}.dark{background:#191a26;box-shadow:0 6px 0 #09090d}.danger{background:linear-gradient(135deg,#e34d65,#8b2438);box-shadow:0 6px 0 #541723}.hide{display:none}.item{display:flex;align-items:center;gap:12px;padding:11px;margin:8px 0;border:1px solid #ffffff12;border-radius:12px}.item img{width:70px;height:55px;object-fit:cover;border-radius:8px}.item main{flex:1}.notice{color:#858093;font-size:12px;line-height:1.7}.err{color:#ff788e;font-size:12px}@media(max-width:650px){.row{grid-template-columns:1fr}.top{gap:10px}.top h1{font-size:16px}.item{align-items:flex-start}}
+</style></head><body>
+<div id="login" class="login box"><h2>FORHAD HOSEN</h2><p class="small">SECURE ADMIN PANEL</p><input id="pass" type="password" placeholder="Admin Password"><button class="btn" onclick="login()">Login</button><button class="btn dark" onclick="checkServer()">Check Server</button><p id="err" class="err"></p></div>
+<div id="app" class="wrap hide"><div class="top"><div><h1>Admin Panel</h1><span class="small">Public Portfolio Manager</span></div><a class="btn dark" href="/" target="_blank">View Website</a></div>
+<div class="box"><button class="btn" onclick="tab('design')">🎨 Add Design</button><button class="btn dark" onclick="tab('course')">▶ Add Course</button><button class="btn dark" onclick="tab('manage')">⚙ Manage</button></div>
+<div id="design" class="box"><h2>New Design</h2><input id="dt" placeholder="Design Title"><div class="row"><input id="dp" placeholder="Price (যেমন ৳500)"><input id="di" placeholder="Image URL"></div><textarea id="dd" placeholder="Description"></textarea><button class="btn" onclick="addDesign()">＋ Publish Design</button></div>
+<div id="course" class="box hide"><h2>New Free Course</h2><input id="ct" placeholder="Course / Video Title"><input id="cv" placeholder="YouTube Video URL"><input id="ci" placeholder="Thumbnail Image URL"><button class="btn" onclick="addCourse()">＋ Publish Course</button></div>
+<div id="manage" class="box hide"><h2>Published Content</h2><div id="list"></div><p class="notice">এই version-এ data Netlify Blobs-এ server-side save হয়। তাই Admin থেকে publish করা content সব visitor-এর public website-এ দেখা যাবে। Firebase লাগবে না।</p></div>
+</div>
+<script>
+let PASSWORD=sessionStorage.getItem("fp_admin_password")||"";
+function login(){let p=document.getElementById("pass").value;fetch("/.netlify/functions/save-content",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:p,action:"test"})}).then(r=>{if(r.ok){PASSWORD=p;sessionStorage.setItem("fp_admin_password",p);openApp()}else document.getElementById("err").textContent="Password ভুল অথবা Netlify environment variable সেট করা হয়নি।"}).catch(()=>document.getElementById("err").textContent="Server connection হয়নি।")}
+function openApp(){document.getElementById("login").classList.add("hide");document.getElementById("app").classList.remove("hide");render()}
+function tab(x){["design","course","manage"].forEach(a=>document.getElementById(a).classList.toggle("hide",a!==x))}
+async function api(action,data){let r=await fetch("/.netlify/functions/save-content",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:PASSWORD,action,...data})});let j=await r.json();if(!r.ok)throw Error(j.error||"Error");return j}
+async function addDesign(){if(!dt.value.trim()||!di.value.trim())return alert("Title ও Image URL দিন");try{await api("addDesign",{item:{id:Date.now(),title:dt.value,price:dp.value,image:di.value,desc:dd.value}});dt.value=dp.value=di.value=dd.value="";alert("Design published");render()}catch(e){alert(e.message)}}
+async function addCourse(){if(!ct.value.trim()||!cv.value.trim())return alert("Title ও Video URL দিন");try{await api("addCourse",{item:{id:Date.now(),title:ct.value,video:cv.value,image:ci.value}});ct.value=cv.value=ci.value="";alert("Course published");render()}catch(e){alert(e.message)}}
+async function del(type,id){if(!confirm("Delete করবেন?"))return;try{await api("delete",{type,id});render()}catch(e){alert(e.message)}}
+async function render(){try{let r=await fetch("/.netlify/functions/get-content");let x=await r.json(),h="";x.designs.forEach(a=>h+=`<div class="item"><img src="${esc(a.image)}"><main><b>${esc(a.title)}</b><div class="small">${esc(a.price)}</div></main><button class="btn danger" onclick="del('designs',${a.id})">Delete</button></div>`);x.courses.forEach(a=>h+=`<div class="item"><img src="${esc(a.image)}"><main><b>${esc(a.title)}</b><div class="small">Free Course</div></main><button class="btn danger" onclick="del('courses',${a.id})">Delete</button></div>`);document.getElementById("list").innerHTML=h||'<p class="small">No content yet.</p>'}catch(e){document.getElementById("list").innerHTML='<p class="err">Content load হয়নি।</p>'}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+
+async function checkServer(){
+  const err=document.getElementById("err");
+  err.textContent="Checking server...";
+  try{
+    const r=await fetch("/.netlify/functions/health",{cache:"no-store"});
+    const j=await r.json().catch(()=>({}));
+    err.textContent=r.ok ? "✓ "+(j.message||"Server connected.") : "✗ "+(j.error||"Server connection failed.");
+  }catch(e){
+    err.textContent="✗ Function পাওয়া যায়নি। Netlify-তে পুরো project deploy হয়েছে কি না দেখুন।";
+  }
+}
+</script></body></html>

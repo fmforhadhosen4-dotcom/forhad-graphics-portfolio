@@ -1,0 +1,66 @@
+FORHAD HOSEN — NETLIFY + NETLIFY BLOBS (NO FIREBASE)
+==========================================================
+
+এই ZIP-এ User website + Admin panel + server functions সব আছে।
+
+1) Netlify-তে site বানান
+------------------------
+- Netlify-তে login করুন।
+- Add new project / site তৈরি করুন।
+- সবচেয়ে নির্ভরযোগ্যভাবে GitHub repository connect করে এই পুরো folder deploy করুন।
+- Manual deploy ব্যবহার করলে ZIP-এর ভেতরের পুরো folder structure upload করুন; শুধু index.html/admin.html আলাদা করে upload করবেন না।
+
+2) ADMIN PASSWORD অবশ্যই সেট করুন
+----------------------------------
+Netlify Dashboard → আপনার Site → Project configuration / Environment variables
+
+Add variable:
+Name: ADMIN_PASSWORD
+Value: আপনার নিজের শক্তিশালী password
+
+Save করার পর নতুন deploy/redeploy করুন।
+
+3) Admin কোথায় খুলবেন
+---------------------
+আপনার Netlify site URL-এর শেষে:
+ /admin.html
+
+উদাহরণ:
+https://YOUR-SITE.netlify.app/admin.html
+
+4) Server connection test
+-------------------------
+Admin login page-এ "Check Server" চাপুন।
+যদি দেখায়:
+✓ Netlify server and storage are connected.
+তাহলে server ঠিক আছে।
+
+5) গুরুত্বপূর্ণ
+---------------
+- admin.html ফোনের File Manager/Chrome দিয়ে file:// হিসেবে খুললে login কাজ করবে না।
+- অবশ্যই Netlify URL দিয়ে খুলতে হবে।
+- Firebase লাগবে না।
+- Data Netlify Blobs-এ server-side save হবে।
+- Admin থেকে publish করলে সব visitor একই content দেখতে পাবে।
+- Image field এখন Image URL নেয়; সরাসরি Gallery upload এই version-এ নেই।
+
+6) যদি Login না হয়
+------------------
+- ADMIN_PASSWORD নামটি হুবহু লিখুন।
+- Password-এর আগে/পরে extra space দেবেন না।
+- Environment variable save করার পর redeploy করুন।
+- Admin page Netlify URL দিয়ে খুলুন।
+- "Check Server" চাপুন।
+
+7) Deploy করার পর দ্রুত test
+----------------------------
+Public:
+https://YOUR-SITE.netlify.app/
+
+Admin:
+https://YOUR-SITE.netlify.app/admin.html
+
+Server:
+https://YOUR-SITE.netlify.app/.netlify/functions/health
+
+Server endpoint browser-এ JSON দেখালে functions চালু আছে।
